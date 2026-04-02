@@ -18,13 +18,51 @@ export default function UploadZone({ onScanSuccess, existingCoordinates }) {
     setIsDragActive(false);
   };
 
+  // Helper to shrink large screenshots for Tesseract
+  const compressImageForOCR = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          
+          // Max dimension 1200px to avoid memory crash
+          const MAX_SIZE = 1200;
+          if (width > height && width > MAX_SIZE) {
+            height *= MAX_SIZE / width;
+            width = MAX_SIZE;
+          } else if (height > MAX_SIZE) {
+            width *= MAX_SIZE / height;
+            height = MAX_SIZE;
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.8));
+        };
+        img.onerror = () => reject(new Error('Failed to load image'));
+        img.src = e.target.result;
+      };
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.readAsDataURL(file);
+    });
+  };
+
   const processFile = async (file) => {
     if (!file) return;
     setIsScanning(true);
 
     try {
+      // 0. Compress image to avoid OOM
+      const optimizedImageBase64 = await compressImageForOCR(file);
+
       // 1. Tesseract OCR
-      const { data: { text } } = await Tesseract.recognize(file, 'chi_tra+eng', {
+      const { data: { text } } = await Tesseract.recognize(optimizedImageBase64, 'chi_tra+eng', {
         logger: m => console.log(m)
       });
       console.log('OCR Result:', text);
@@ -43,7 +81,7 @@ export default function UploadZone({ onScanSuccess, existingCoordinates }) {
       const lon = match[2];
       const coordString = `${lat}, ${lon}`;
 
-      // 3. LocalStorage dupe check
+      // 3. LocalStorage / Supabase dupe check
       if (existingCoordinates.includes(coordString)) {
         alert(t('dupe_coord'));
         setIsScanning(false);
@@ -60,7 +98,7 @@ export default function UploadZone({ onScanSuccess, existingCoordinates }) {
         country = data.address.country;
       }
 
-      // Success
+      // Success using ORIGINAL image for user cropping (high quality)
       const fileUrl = URL.createObjectURL(file);
       onScanSuccess({
         originalImage: fileUrl,
@@ -69,7 +107,7 @@ export default function UploadZone({ onScanSuccess, existingCoordinates }) {
       });
 
     } catch (error) {
-      console.error(error);
+      console.error("Scanning Error:", error);
       alert(t('scan_error'));
     } finally {
       setIsScanning(false);
