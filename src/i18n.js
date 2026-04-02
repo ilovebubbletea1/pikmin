@@ -16,7 +16,8 @@ export const translations = {
     btn_copied: "已複製",
     btn_mark_completed: "標記為已完成",
     btn_completed: "已完成",
-    filter_all: "全部"
+    filter_all: "全部",
+    empty_state: "歡迎！點擊下方的「+」開始新增明信片吧"
   },
   en: {
     subtitle: "Upload screenshot, auto-extract coordinates, collect postcards",
@@ -35,7 +36,8 @@ export const translations = {
     btn_copied: "Copied",
     btn_mark_completed: "Mark Completed",
     btn_completed: "Completed",
-    filter_all: "All"
+    filter_all: "All",
+    empty_state: "Welcome! Click the '+' below to quickly add your postcard"
   },
   ko: {
     subtitle: "스크린샷 업로드, 좌표 자동 추출, 엽서 수집",
@@ -54,7 +56,8 @@ export const translations = {
     btn_copied: "복사됨",
     btn_mark_completed: "완료로 표시",
     btn_completed: "완료됨",
-    filter_all: "전체"
+    filter_all: "전체",
+    empty_state: "환영합니다! 아래의 '+' 버튼을 눌러 첫 엽서를 추가해보세요"
   }
 };
 

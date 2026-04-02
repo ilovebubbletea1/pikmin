@@ -95,13 +95,7 @@ export default function UploadZone({ onScanSuccess, existingCoordinates }) {
   };
 
   return (
-    <div 
-      className={clsx('upload-zone', isDragActive && 'drag-active')}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-      onClick={() => fileInputRef.current?.click()}
-    >
+    <>
       <input 
         type="file" 
         accept="image/*" 
@@ -109,19 +103,20 @@ export default function UploadZone({ onScanSuccess, existingCoordinates }) {
         ref={fileInputRef}
         onChange={handleChange}
       />
-      
-      {isScanning ? (
-        <div style={{ padding: '2rem 0'}}>
-          <Loader2 className="upload-icon spinner" style={{ margin: '0 auto', marginBottom: '1rem' }} />
-          <p className="upload-text">{t('scan_progress')}</p>
-        </div>
-      ) : (
-        <>
-          <UploadCloud className="upload-icon" style={{ margin: '0 auto', marginBottom: '1rem' }} />
-          <p className="upload-text">{t('drag_drop_text')}</p>
-          <p className="upload-subtext">{t('drag_drop_subtext')}</p>
-        </>
-      )}
-    </div>
+      <button 
+        className={clsx('fab-upload', isScanning && 'fab-scanning')}
+        onClick={() => !isScanning && fileInputRef.current?.click()}
+        title={isScanning ? t('scan_progress') : t('drag_drop_text')}
+      >
+        {isScanning ? (
+          <Loader2 className="spinner" />
+        ) : (
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        )}
+      </button>
+    </>
   );
 }

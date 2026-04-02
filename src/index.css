@@ -75,48 +75,52 @@ body {
   width: 100%;
 }
 
-/* Upload Zone */
-.upload-zone {
-  border: 2px dashed var(--primary);
-  border-radius: var(--radius-xl);
-  padding: 4rem 2rem;
-  text-align: center;
+/* Floating Upload Button (FAB) */
+.fab-upload {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: white;
+  border: none;
+  box-shadow: var(--shadow-lg);
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  background: rgba(255, 90, 95, 0.03);
-  position: relative;
-  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.upload-zone:hover, .upload-zone.drag-active {
-  background: rgba(255, 90, 95, 0.08);
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--primary-hover);
+.fab-upload:hover {
+  transform: translateX(-50%) scale(1.1);
+  box-shadow: 0 16px 32px rgba(255, 90, 95, 0.4);
 }
 
-.upload-icon {
-  color: var(--primary);
-  width: 64px;
-  height: 64px;
-  margin-bottom: 1rem;
-  transition: transform 0.3s ease;
+.fab-upload:active {
+  transform: translateX(-50%) scale(0.95);
 }
 
-.upload-zone:hover .upload-icon {
-  transform: scale(1.1) translateY(-5px);
+.fab-upload svg {
+  width: 28px;
+  height: 28px;
+  color: white;
 }
 
-.upload-text {
-  font-size: 1.25rem;
-  font-weight: 500;
-  color: var(--text-main);
+.fab-scanning {
+  cursor: not-allowed;
+  opacity: 0.9;
+  animation: pulse 2s infinite;
 }
 
-.upload-subtext {
-  font-size: 0.95rem;
-  color: var(--text-muted);
-  margin-top: 0.5rem;
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 90, 95, 0.7); }
+  70% { box-shadow: 0 0 0 15px rgba(255, 90, 95, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 90, 95, 0); }
 }
 
 /* Button Base */

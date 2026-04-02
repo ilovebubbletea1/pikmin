@@ -64,15 +64,20 @@ function App() {
         <p className="subtitle">{t('subtitle')}</p>
       </header>
 
-      <main>
-        <UploadZone 
-          onScanSuccess={handleScanSuccess} 
-          existingCoordinates={existingCoordinates}
-        />
-        
+      <main style={{ paddingBottom: '6rem' }}>
+        {postcards.length === 0 && (
+           <div className="glass-panel" style={{ padding: '3rem 2rem', textAlign: 'center', marginTop: '2rem' }}>
+              <h3>{t('empty_state')}</h3>
+           </div>
+        )}
         <PostcardFeed 
           postcards={postcards} 
           onMarkCompleted={handleMarkCompleted}
+        />
+        
+        <UploadZone 
+          onScanSuccess={handleScanSuccess} 
+          existingCoordinates={existingCoordinates}
         />
 
         {pendingCropData && (
