@@ -57,61 +57,86 @@ export default function UploadZone({ onScanSuccess, existingCoordinates }) {
     if (!file) return;
     setIsScanning(true);
 
+    let ocrText = "";
+    let optimizedImageBase64;
     try {
-      // 0. Compress image to avoid OOM
-      const optimizedImageBase64 = await compressImageForOCR(file);
+      optimizedImageBase64 = await compressImageForOCR(file);
+    } catch (e) {
+      console.error("Compression Error:", e);
+      alert("圖片壓縮失敗 (Code: COMPRESS)");
+      setIsScanning(false);
+      return;
+    }
 
-      // 1. Tesseract OCR
-      const { data: { text } } = await Tesseract.recognize(optimizedImageBase64, 'chi_tra+eng', {
-        logger: m => console.log(m)
+    try {
+      // 1. Tesseract OCR (Only English numbers required for coordinates)
+      const worker = await Tesseract.createWorker('eng', 1, {
+        logger: m => console.log(m),
+        workerPath: 'https://cdn.jsdelivr.net/npm/tesseract.js@v5/dist/worker.min.js',
+        langPath: 'https://tessdata.projectnaptha.com/4.0.0',
+        corePath: 'https://cdn.jsdelivr.net/npm/tesseract.js-core@v5',
       });
-      console.log('OCR Result:', text);
+      const { data: { text } } = await worker.recognize(optimizedImageBase64);
+      ocrText = text;
+      await worker.terminate();
+      console.log('OCR Result:', ocrText);
+    } catch (ocrError) {
+      console.error("OCR Initialize/Scan Error:", ocrError);
+      alert("文字識別引擎載入失敗，可能有網路阻擋或裝置記憶體不足 (Code: OCR)");
+      setIsScanning(false);
+      return;
+    }
 
-      // 2. Extract coordinates
-      const coordRegex = /(-?\d{1,3}\.\d+)[,\s]+(-?\d{1,3}\.\d+)/;
-      const match = text.match(coordRegex);
+    // 2. Extract coordinates
+    const coordRegex = /(-?\d{1,3}\.\d+)[,\s]+(-?\d{1,3}\.\d+)/;
+    const match = ocrText.match(coordRegex);
 
-      if (!match) {
-        alert(t('no_coord'));
-        setIsScanning(false);
-        return;
-      }
+    if (!match) {
+      alert(t('no_coord'));
+      setIsScanning(false);
+      return;
+    }
 
-      const lat = match[1];
-      const lon = match[2];
-      const coordString = `${lat}, ${lon}`;
+    const lat = match[1];
+    const lon = match[2];
+    const coordString = `${lat}, ${lon}`;
 
-      // 3. LocalStorage / Supabase dupe check
-      if (existingCoordinates.includes(coordString)) {
-        alert(t('dupe_coord'));
-        setIsScanning(false);
-        return;
-      }
+    // 3. LocalStorage / Supabase dupe check
+    if (existingCoordinates.includes(coordString)) {
+      alert(t('dupe_coord'));
+      setIsScanning(false);
+      return;
+    }
 
-      // 4. Reverse Geocoding
+    // 4. Reverse Geocoding
+    let country = "Unknown Country";
+    try {
       const osmUrl = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`;
-      const response = await fetch(osmUrl);
+      const response = await fetch(osmUrl, {
+         headers: {
+            'Accept-Language': 'zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7',
+            'User-Agent': 'PikminPostcardApp/1.2'
+         }
+      });
       const data = await response.json();
-      
-      let country = "Unknown Country";
       if (data && data.address && data.address.country) {
         country = data.address.country;
       }
-
-      // Success using ORIGINAL image for user cropping (high quality)
-      const fileUrl = URL.createObjectURL(file);
-      onScanSuccess({
-        originalImage: fileUrl,
-        coordinate: coordString,
-        country: country
-      });
-
-    } catch (error) {
-      console.error("Scanning Error:", error);
-      alert(t('scan_error'));
-    } finally {
-      setIsScanning(false);
+    } catch (osmErr) {
+      console.error("Nominatim Reverse Geocoding Error:", osmErr);
+      // We don't abort exactly, we just leave it as Unknown
+      alert("無法取得國家詳細名稱 (Code: NOMINATIM)");
     }
+
+    // Success using ORIGINAL image for user cropping (high quality)
+    const fileUrl = URL.createObjectURL(file);
+    onScanSuccess({
+      originalImage: fileUrl,
+      coordinate: coordString,
+      country: country
+    });
+
+    setIsScanning(false);
   };
 
   const handleDrop = (e) => {
