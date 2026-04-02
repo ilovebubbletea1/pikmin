@@ -114,8 +114,7 @@ export default function UploadZone({ onScanSuccess, existingCoordinates }) {
       const osmUrl = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`;
       const response = await fetch(osmUrl, {
          headers: {
-            'Accept-Language': 'zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7',
-            'User-Agent': 'PikminPostcardApp/1.2'
+            'Accept-Language': 'zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7'
          }
       });
       const data = await response.json();
