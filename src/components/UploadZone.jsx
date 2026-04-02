@@ -23,7 +23,7 @@ export default function UploadZone({ onScanSuccess, existingCoordinates }) {
 
     try {
       // 1. Tesseract OCR
-      const { data: { text } } = await Tesseract.recognize(file, 'chi_tra+eng', {
+      const { data: { text } } = await Tesseract.recognize(file, 'eng+kor+chi_tra+chi_sim', {
         logger: m => console.log(m)
       });
       console.log('OCR Result:', text);
