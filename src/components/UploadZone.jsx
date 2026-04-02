@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import Tesseract from 'tesseract.js';
 import { UploadCloud, Loader2 } from 'lucide-react';
 import clsx from 'clsx';
+import { t } from '../i18n';
 
 export default function UploadZone({ onScanSuccess, existingCoordinates }) {
   const [isDragActive, setIsDragActive] = useState(false);
@@ -33,7 +34,7 @@ export default function UploadZone({ onScanSuccess, existingCoordinates }) {
       const match = text.match(coordRegex);
 
       if (!match) {
-        alert("無法從圖片中辨識出座標，請確認這是一張正確的手機截圖。");
+        alert(t('no_coord'));
         setIsScanning(false);
         return;
       }
@@ -44,7 +45,7 @@ export default function UploadZone({ onScanSuccess, existingCoordinates }) {
 
       // 3. LocalStorage dupe check
       if (existingCoordinates.includes(coordString)) {
-        alert("此坐標已存在");
+        alert(t('dupe_coord'));
         setIsScanning(false);
         return;
       }
@@ -69,7 +70,7 @@ export default function UploadZone({ onScanSuccess, existingCoordinates }) {
 
     } catch (error) {
       console.error(error);
-      alert("辨識過程發生錯誤");
+      alert(t('scan_error'));
     } finally {
       setIsScanning(false);
     }
@@ -112,13 +113,13 @@ export default function UploadZone({ onScanSuccess, existingCoordinates }) {
       {isScanning ? (
         <div style={{ padding: '2rem 0'}}>
           <Loader2 className="upload-icon spinner" style={{ margin: '0 auto', marginBottom: '1rem' }} />
-          <p className="upload-text">掃描座標中 (需時數秒)...</p>
+          <p className="upload-text">{t('scan_progress')}</p>
         </div>
       ) : (
         <>
           <UploadCloud className="upload-icon" style={{ margin: '0 auto', marginBottom: '1rem' }} />
-          <p className="upload-text">點擊或拖曳長截圖至此處</p>
-          <p className="upload-subtext">自動辨識座標並載入明信片</p>
+          <p className="upload-text">{t('drag_drop_text')}</p>
+          <p className="upload-subtext">{t('drag_drop_subtext')}</p>
         </>
       )}
     </div>

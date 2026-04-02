@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Copy, CheckCircle } from 'lucide-react';
 import clsx from 'clsx';
+import { t } from '../i18n';
 
 export default function PostcardFeed({ postcards, onMarkCompleted }) {
   const [filterCountry, setFilterCountry] = useState('All');
@@ -9,7 +10,7 @@ export default function PostcardFeed({ postcards, onMarkCompleted }) {
   // Derive unique countries for dropdown
   const uniqueCountries = useMemo(() => {
     const list = new Set(postcards.map(p => p.country));
-    return ['All', ...Array.from(list).sort()];
+    return [t('filter_all'), ...Array.from(list).sort()];
   }, [postcards]);
 
   // Sort and filter logic
@@ -17,7 +18,7 @@ export default function PostcardFeed({ postcards, onMarkCompleted }) {
     let filtered = postcards;
     
     // Filter by Country
-    if (filterCountry !== 'All') {
+    if (filterCountry !== t('filter_all') && filterCountry !== 'All') {
       filtered = filtered.filter(p => p.country === filterCountry);
     }
     
@@ -48,7 +49,7 @@ export default function PostcardFeed({ postcards, onMarkCompleted }) {
   return (
     <div className="postcard-feed-container">
       <div className="filters-bar">
-        <h2>已保存的明信片</h2>
+        <h2>{t('feed_title')}</h2>
         <select 
           className="filter-select"
           value={filterCountry} 
@@ -80,7 +81,7 @@ export default function PostcardFeed({ postcards, onMarkCompleted }) {
                   onClick={() => handleCopy(card)}
                 >
                   <Copy size={16} />
-                  {copiedId === card.id ? '已複製' : '複製座標'}
+                  {copiedId === card.id ? t('btn_copied') : t('btn_copy')}
                 </button>
                 
                 {!card.is_completed && (
@@ -89,13 +90,13 @@ export default function PostcardFeed({ postcards, onMarkCompleted }) {
                     onClick={() => onMarkCompleted(card.id)}
                   >
                     <CheckCircle size={16} />
-                    標記為已完成
+                    {t('btn_mark_completed')}
                   </button>
                 )}
                 {card.is_completed && (
                   <span className="icon-btn success" style={{ cursor: 'default' }}>
                     <CheckCircle size={16} />
-                    已完成
+                    {t('btn_completed')}
                   </span>
                 )}
               </div>

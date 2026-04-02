@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import './index.css';
+import { t } from './i18n';
 import UploadZone from './components/UploadZone.jsx';
 import CropModal from './components/CropModal.jsx';
 import PostcardFeed from './components/PostcardFeed.jsx';
@@ -60,7 +61,7 @@ function App() {
     <div className="app-container">
       <header>
         <h1 className="title">Pikmin Postcards</h1>
-        <p className="subtitle">上傳截圖、自動擷取座標、收藏明信片</p>
+        <p className="subtitle">{t('subtitle')}</p>
       </header>
 
       <main>

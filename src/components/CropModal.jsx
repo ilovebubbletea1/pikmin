@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import Cropper from 'react-easy-crop';
+import { t } from '../i18n';
 
 // Helper to generate base64 from crop
 const getCroppedImg = async (imageSrc, pixelCrop) => {
@@ -44,7 +45,7 @@ export default function CropModal({ slideData, onConfirm, onCancel }) {
       onConfirm(croppedBase64);
     } catch (e) {
       console.error(e);
-      alert('裁切圖片失敗');
+      alert(t('crop_error'));
     }
   };
 
@@ -52,7 +53,7 @@ export default function CropModal({ slideData, onConfirm, onCancel }) {
     <div className="modal-overlay">
       <div className="modal-content">
         <div className="modal-header">
-          <h3>裁切明信片範圍</h3>
+          <h3>{t('modal_title')}</h3>
           <div style={{display: 'flex', gap: '1rem'}}>
              <div>{slideData.country}</div>
              <div style={{color: 'rgba(255,255,255,0.5)'}}>{slideData.coordinate}</div>
@@ -73,10 +74,10 @@ export default function CropModal({ slideData, onConfirm, onCancel }) {
 
         <div className="modal-footer">
           <button className="btn btn-secondary" onClick={onCancel}>
-            取消
+            {t('btn_cancel')}
           </button>
           <button className="btn btn-primary" onClick={handleConfirm}>
-            確認裁切
+            {t('btn_confirm')}
           </button>
         </div>
       </div>
