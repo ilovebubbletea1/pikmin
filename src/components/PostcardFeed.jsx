@@ -27,7 +27,7 @@ export default function PostcardFeed({ postcards, onMarkCompleted }) {
     // 2. newest created_at before oldest
     return filtered.sort((a, b) => {
       if (a.is_completed === b.is_completed) {
-        return b.created_at - a.created_at; // newest first
+        return new Date(b.created_at) - new Date(a.created_at); // newest first
       }
       return a.is_completed ? 1 : -1; // uncompleted first
     });
@@ -65,7 +65,7 @@ export default function PostcardFeed({ postcards, onMarkCompleted }) {
         {displayCards.map(card => (
           <div key={card.id} className={clsx('postcard-card glass-panel', card.is_completed && 'completed')}>
             <div className="postcard-img-container">
-              <img src={card.cropped_image} alt={card.country} className="postcard-img" />
+              <img src={card.cropped_image_url} alt={card.country} className="postcard-img" />
             </div>
             
             <div className="postcard-details">

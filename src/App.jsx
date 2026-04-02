@@ -4,57 +4,111 @@ import { t } from './i18n';
 import UploadZone from './components/UploadZone.jsx';
 import CropModal from './components/CropModal.jsx';
 import PostcardFeed from './components/PostcardFeed.jsx';
+import { supabase } from './supabase';
+
+// Helper to convert Base64 to Blob
+function dataURLtoBlob(dataurl) {
+  var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+      bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+  while(n--){
+      u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new Blob([u8arr], {type:mime});
+}
 
 function App() {
   const [postcards, setPostcards] = useState([]);
   const [pendingCropData, setPendingCropData] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
 
-  // Load from LocalStorage on mount
+  // Load from Supabase on mount
   useEffect(() => {
-    const saved = localStorage.getItem('pikmin-postcards');
-    if (saved) {
-      try {
-        setPostcards(JSON.parse(saved));
-      } catch (e) {
-        console.error("Failed to parse local storage", e);
-      }
-    }
+    fetchPostcards();
   }, []);
 
-  // Save to LocalStorage whenever postcards change
-  useEffect(() => {
-    localStorage.setItem('pikmin-postcards', JSON.stringify(postcards));
-  }, [postcards]);
+  const fetchPostcards = async () => {
+    const { data, error } = await supabase
+      .from('postcards')
+      .select('*')
+      .order('created_at', { ascending: false });
+      
+    if (error) {
+      console.error("Error fetching postcards:", error);
+    } else {
+      setPostcards(data || []);
+    }
+  };
 
   // Derive existing coords for checking dupes
   const existingCoordinates = postcards.map(p => p.coordinate);
 
   const handleScanSuccess = (data) => {
-    // data: { originalImage, coordinate, country }
     setPendingCropData(data);
   };
 
-  const handleCropConfirm = (croppedBase64) => {
-    const newPostcard = {
-      id: crypto.randomUUID(),
-      cropped_image: croppedBase64,
-      coordinate: pendingCropData.coordinate,
-      country: pendingCropData.country,
-      is_completed: false,
-      created_at: Date.now()
-    };
-    setPostcards(prev => [...prev, newPostcard]);
-    setPendingCropData(null); // specific close modal
+  const handleCropConfirm = async (croppedBase64) => {
+    setIsUploading(true);
+    try {
+      // 1. Upload to Supabase Storage
+      const fileExt = "jpg";
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `public/${fileName}`;
+      const blob = dataURLtoBlob(croppedBase64);
+
+      const { error: uploadError } = await supabase.storage
+        .from('postcards')
+        .upload(filePath, blob, {
+          contentType: 'image/jpeg'
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('postcards')
+        .getPublicUrl(filePath);
+
+      // 2. Insert into Supabase DB
+      const { error: insertError } = await supabase
+        .from('postcards')
+        .insert([{
+          cropped_image_url: publicUrl,
+          coordinate: pendingCropData.coordinate,
+          country: pendingCropData.country,
+          is_completed: false
+        }]);
+
+      if (insertError) throw insertError;
+
+      // 3. Refresh list
+      await fetchPostcards();
+    } catch (err) {
+      console.error('Failed to save postcard:', err);
+      alert('上傳失敗：' + err.message);
+    } finally {
+      setIsUploading(false);
+      setPendingCropData(null);
+    }
   };
 
   const handleCropCancel = () => {
     setPendingCropData(null);
   };
 
-  const handleMarkCompleted = (id) => {
+  const handleMarkCompleted = async (id) => {
+    // Optimistic UI update
     setPostcards(prev => prev.map(p => 
       p.id === id ? { ...p, is_completed: true } : p
     ));
+
+    const { error } = await supabase
+      .from('postcards')
+      .update({ is_completed: true })
+      .eq('id', id);
+
+    if (error) {
+      console.error("Error updating status:", error);
+      // Revert if error occurs implicitly or handle explicitly
+    }
   };
 
   return (
