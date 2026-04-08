@@ -87,7 +87,11 @@ export default function PostcardFeed({ postcards, onMarkCompleted }) {
                 {!card.is_completed && (
                   <button 
                     className="icon-btn"
-                    onClick={() => onMarkCompleted(card.id)}
+                    onClick={() => {
+                      if (window.confirm(t('confirm_mark_completed'))) {
+                        onMarkCompleted(card.id);
+                      }
+                    }}
                   >
                     <CheckCircle size={16} />
                     {t('btn_mark_completed')}

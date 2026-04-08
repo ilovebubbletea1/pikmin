@@ -15,6 +15,7 @@ export const translations = {
     btn_copy: "複製座標",
     btn_copied: "已複製",
     btn_mark_completed: "標記為已完成",
+    confirm_mark_completed: "確定要標記為已完成嗎？",
     btn_completed: "已完成",
     filter_all: "全部",
     empty_state: "歡迎！點擊下方的「+」開始新增明信片吧"
@@ -35,6 +36,7 @@ export const translations = {
     btn_copy: "Copy Coord",
     btn_copied: "Copied",
     btn_mark_completed: "Mark Completed",
+    confirm_mark_completed: "Are you sure you want to mark this as completed?",
     btn_completed: "Completed",
     filter_all: "All",
     empty_state: "Welcome! Click the '+' below to quickly add your postcard"
@@ -55,6 +57,7 @@ export const translations = {
     btn_copy: "좌표 복사",
     btn_copied: "복사됨",
     btn_mark_completed: "완료로 표시",
+    confirm_mark_completed: "완료로 표시하시겠습니까?",
     btn_completed: "완료됨",
     filter_all: "전체",
     empty_state: "환영합니다! 아래의 '+' 버튼을 눌러 첫 엽서를 추가해보세요"
